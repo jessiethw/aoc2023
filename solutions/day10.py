@@ -1,6 +1,6 @@
 import numpy as np
 
-with open('../inputs/test10-2.txt') as f:
+with open('../inputs/test10-4.txt') as f:
 #with open('../inputs/day10.txt') as f:
     input = f.readlines()
 
@@ -29,6 +29,36 @@ def next(string, coord, prev):
     prev = np.asarray(prev)
     return borders[np.where(borders != prev)[0][0]]
 
+def is_enclosed(arr):
+    msk1, msk2 = [], []
+    for row in arr: 
+        encl = False
+        new_row = []
+        for elem in row:
+            if not elem: 
+                if encl: new_row.append(True)
+                else: new_row.append(False)
+            else: 
+                encl = ~encl
+                new_row.append(False)
+        msk1.append(new_row)
+    msk1 = np.asarray(msk1)
+
+    for row in np.transpose(arr): 
+        encl = False
+        new_row = []
+        for elem in row:
+            if not elem: 
+                if encl: new_row.append(True)
+                else: new_row.append(False)
+            else: 
+                encl = ~encl
+                new_row.append(False)
+        msk2.append(new_row)
+    msk2 = np.transpose(np.asarray(msk2))
+
+    return msk1*msk2
+
 coords = []
 for line in range(len(input)):
     if 'S' in input[line]: 
@@ -46,7 +76,7 @@ for c in check:
     if np.any(c == -1): continue
 
     first_step = input[c[0]][c[1]]
-    if first_step == '7':
+    if first_step == '|':
         first_coords = c
         break
 
@@ -60,3 +90,10 @@ while first_step != 'S':
 
 print('Answer to part 1: {}'.format(int(np.ceil(len(path)/2.))))
 
+new_arr = np.full((len(input), len(input[0][:-1])), fill_value=False, dtype=bool)
+#print(new_arr)
+for idx in path:
+    new_arr[idx[0]][idx[1]]=True
+
+msk = is_enclosed(new_arr)
+print('Answer to part 2: {}'.format(np.where(msk)[0].size))
